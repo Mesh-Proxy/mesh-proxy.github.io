@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>MESH PROXY</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,500&display=swap" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+      body {
+        background: linear-gradient(90deg, rgb(29, 29, 19), rgb(45, 46, 33), rgb(29, 28, 19));
+        font-family: dm sans;
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+      }
+
+      .main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20px;
+      }
+
+      .logo {
+        width: 400px;
+        max-width: 90%;
+        margin-bottom: 20px;
+      }
+
+      .bar {
+        display: flex;
+        align-items: center;
+        width: 700px;
+        max-width: 100%;
+        height: 56px;
+        border-radius: 28px;
+        padding: 0 20px;
+        background: transparent;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+        backdrop-filter: blur(8px);
+        border: 1.5px solid rgba(200, 220, 255, 0.08);
+        transition: width 0.6s ease;
+      }
+
+      .bar:focus-within {
+        width: 740px;
+        max-width: 95%;
+      }
+
+      .bar .gicon {
+        width: 28px;
+        height: 28px;
+        margin-right: 14px;
+        flex-shrink: 0;
+      }
+
+      .bar input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: #cfd8dc;
+        font-size: 20px;
+        padding: 0 8px;
+      }
+
+      .bar .sicon {
+        width: 24px;
+        height: 24px;
+        margin-left: 10px;
+        opacity: 0.7;
+        flex-shrink: 0;
+      }
+
+      ::placeholder {
+        color: #aeb7c2;
+        opacity: 1;
+      }
+
+      .slct {
+        position: relative;
+        width: 240px;
+        user-select: none;
+        cursor: pointer;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.07);
+        backdrop-filter: blur(10px);
+        border: 1.5px solid rgba(255, 255, 255, 0.15);
+        color: gray;
+        font-size: 16px;
+        padding: 12px 20px;
+        margin-top: 16px;
+      }
+
+      .slct-cur {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .slct-cur::after {
+        content: "";
+        border: solid gray;
+        border-width: 0 2.5px 2.5px 0;
+        padding: 4px;
+        transform: rotate(45deg);
+        margin-left: 10px;
+        transition: transform 0.3s ease;
+      }
+
+      .slct-cur.active::after {
+        transform: rotate(-45deg);
+      }
+
+      .slct-itms {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.07);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        border: 1.5px solid rgba(255, 255, 255, 0.15);
+        margin-top: 8px;
+        z-index: 99;
+        max-height: 200px;
+        overflow-y: auto;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        color: gray;
+        font-size: 16px;
+      }
+
+      .slct-itms div {
+        padding: 12px 20px;
+        transition: background-color 0.3s ease;
+      }
+
+      .slct-itms div:hover {
+        background-color: rgba(200, 200, 200, 0.15);
+        color: white;
+      }
+
+      .hide {
+        display: none;
+      }
+
+      #iframe-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        z-index: 9998;
+      }
+
+      #iframe-container iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+      }
+
+      #bottom-search {
+        position: fixed;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        max-width: 700px;
+        padding: 20px;
+        border-radius: 40px;
+        background: linear-gradient(90deg, rgb(29, 29, 19), rgb(45, 46, 33), rgb(29, 28, 19));
+        backdrop-filter: blur(10px);
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        bottom: 2px;
+      }
+
+      #bottom-search input {
+        flex: 1;
+        padding: 10px 14px;
+        font-size: 16px;
+        border: none;
+        border-radius: 20px;
+        background: rgba(255, 255, 255, 0.08);
+        color: #ccc;
+        outline: none;
+      }
+
+      #bottom-search .slct-itms {
+        top: auto;
+        bottom: 50px;
+        margin-top: 0;
+        margin-bottom: 8px;
+        background: linear-gradient(90deg, rgb(29, 29, 19), rgb(45, 46, 33), rgb(29, 28, 19));
+        color: white;
+      }
+
+      @media (max-width: 768px) {
+        .logo {
+          width: 300px;
+        }
+
+        .bar {
+          width: 90%;
+          height: 50px;
+        }
+
+        .bar input {
+          font-size: 18px;
+        }
+
+        .slct {
+          width: 90%;
+          font-size: 14px;
+          padding: 10px 16px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .logo {
+          width: 240px;
+        }
+
+        .bar {
+          padding: 0 16px;
+          height: 46px;
+        }
+
+        .bar .gicon {
+          width: 24px;
+          height: 24px;
+          margin-right: 10px;
+        }
+
+        .bar input {
+          font-size: 16px;
+        }
+
+        .bar .sicon {
+          width: 20px;
+          height: 20px;
+          margin-left: 8px;
+        }
+
+        .slct {
+          font-size: 14px;
+          padding: 8px 12px;
+          width: 95%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main">
+      <img src="meshlogo.png" alt="Logo" class="logo" />
+      <div class="bar">
+        <img class="gicon" src="googlelogo-removebg-preview.png" alt="GL" />
+        <input type="text" placeholder="Search Mesh or type a URL..." autocomplete="off" id="srch-input" />
+        <img class="sicon" src="searchicon.png" alt="Search Icon" />
+      </div>
+      <div class="slct" id="eng-slct">
+        <div class="slct-cur" data-value="duckduckgo">DuckDuckGo</div>
+        <div class="slct-itms hide">
+          <div data-value="duckduckgo">DuckDuckGo</div>
+          <div data-value="google">Google</div>
+          <div data-value="bing">Bing</div>
+        </div>
+      </div>
+    </div>
+    <script>
+      const slct = document.getElementById("eng-slct");
+      const cur = slct.querySelector(".slct-cur");
+      const itms = slct.querySelector(".slct-itms");
+      const opts = itms.querySelectorAll("div");
+      const input = document.getElementById("srch-input");
+      cur.addEventListener("click", () => {
+        itms.classList.toggle("hide");
+        cur.classList.toggle("active");
+      });
+      opts.forEach((opt) => {
+        opt.addEventListener("click", () => {
+          cur.textContent = opt.textContent;
+          cur.dataset.value = opt.dataset.value;
+          itms.classList.add("hide");
+          cur.classList.remove("active");
+        });
+      });
+      document.addEventListener("click", (e) => {
+        if (!slct.contains(e.target)) {
+          itms.classList.add("hide");
+          cur.classList.remove("active");
+        }
+      });
+
+      function getSearchURL(query, engine) {
+        switch (engine) {
+          case "google":
+            return `/active/embed.html?url=https://www.google.com/search?q=${encodeURIComponent(query)}`;
+          case "bing":
+            return `/active/embed.html?url=https://www.bing.com/search?q=${encodeURIComponent(query)}`;
+          default:
+            return `/active/embed.html?url=https://duckduckgo.com/?q=${encodeURIComponent(query)}`;
+        }
+      }
+
+      function createIframe(url) {
+        let container = document.getElementById("iframe-container");
+        if (!container) {
+          container = document.createElement("div");
+          container.id = "iframe-container";
+          const iframe = document.createElement("iframe");
+          iframe.id = "mesh-iframe";
+          iframe.src = url;
+          container.appendChild(iframe);
+          document.body.appendChild(container);
+        } else {
+          container.querySelector("iframe").src = url;
+        }
+      }
+
+      function createBottomSearchBar() {
+        if (document.getElementById("bottom-search")) return;
+        const bar = document.createElement("div");
+        bar.id = "bottom-search";
+        const slctBottom = document.createElement("div");
+        slctBottom.className = "slct";
+        slctBottom.style.margin = "0";
+        const slctCur = document.createElement("div");
+        slctCur.className = "slct-cur";
+        slctCur.dataset.value = cur.dataset.value || "duckduckgo";
+        slctCur.textContent = slctCur.dataset.value.charAt(0).toUpperCase() + slctCur.dataset.value.slice(1);
+        const slctItms = document.createElement("div");
+        slctItms.className = "slct-itms hide";
+        const engines = ["duckduckgo", "google", "bing"];
+        engines.forEach((engine) => {
+          const item = document.createElement("div");
+          item.dataset.value = engine;
+          item.textContent = engine.charAt(0).toUpperCase() + engine.slice(1);
+          slctItms.appendChild(item);
+          item.addEventListener("click", () => {
+            slctCur.textContent = item.textContent;
+            slctCur.dataset.value = item.dataset.value;
+            slctItms.classList.add("hide");
+            slctCur.classList.remove("active");
+          });
+        });
+        slctCur.addEventListener("click", () => {
+          slctItms.classList.toggle("hide");
+          slctCur.classList.toggle("active");
+        });
+        document.addEventListener("click", (e) => {
+          if (!slctBottom.contains(e.target)) {
+            slctItms.classList.add("hide");
+            slctCur.classList.remove("active");
+          }
+        });
+        slctBottom.appendChild(slctCur);
+        slctBottom.appendChild(slctItms);
+        const inputBottom = document.createElement("input");
+        inputBottom.type = "text";
+        inputBottom.placeholder = "Search again or type a URL...";
+        inputBottom.style.flex = "1";
+        inputBottom.addEventListener("keydown", function(e) {
+          if (e.key === "Enter") {
+            const query = inputBottom.value.trim();
+            if (!query) return;
+            const engine = slctCur.dataset.value;
+            const isURL = /^(https?:\/\/|www\.)/.test(query);
+            let finalURL = isURL ? query : getSearchURL(query, engine);
+            if (isURL && !/^https?:\/\//.test(query)) {
+              finalURL = "https://" + query;
+            }
+            createIframe(finalURL);
+          }
+        });
+        bar.appendChild(slctBottom);
+        bar.appendChild(inputBottom);
+        document.body.appendChild(bar);
+      }
+      input.addEventListener("keydown", function(e) {
+        if (e.key === "Enter") {
+          const query = input.value.trim();
+          if (!query) return;
+          const engine = cur.dataset.value || "duckduckgo";
+          const isURL = /^(https?:\/\/|www\.)/.test(query);
+          let finalURL = isURL ? query : getSearchURL(query, engine);
+          if (isURL && !/^https?:\/\//.test(query)) {
+            finalURL = "https://" + query;
+          }
+          document.querySelector(".main").style.display = "none";
+          createIframe(finalURL);
+          createBottomSearchBar();
+          createNavButtons();
+        }
+      });
+    </script>
+  </body>
+</html>
